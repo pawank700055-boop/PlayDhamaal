@@ -1,0 +1,427 @@
+```html
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>PlayKamao - GK Quiz</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #071329;
+    color: white;
+    text-align: center;
+}
+
+header {
+    padding: 20px;
+    background: #102650;
+    border-bottom: 2px solid #263e72;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 30px;
+    color: #ffd43b;
+}
+
+header p {
+    color: #c5d4ef;
+}
+
+.container {
+    width: 92%;
+    max-width: 650px;
+    margin: 35px auto;
+}
+
+.card {
+    background: #102143;
+    padding: 25px;
+    border-radius: 18px;
+    border: 1px solid #34518a;
+    box-shadow: 0 10px 35px #0005;
+}
+
+.badge {
+    display: inline-block;
+    background: #203e71;
+    color: #83e8ff;
+    padding: 7px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+#question {
+    font-size: 23px;
+    line-height: 1.5;
+    margin: 25px 0;
+}
+
+#answers {
+    display: grid;
+    gap: 12px;
+}
+
+.answer {
+    background: #19345f;
+    border: 1px solid #41639c;
+    color: white;
+    padding: 15px;
+    font-size: 16px;
+    border-radius: 11px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.answer:hover:not(:disabled) {
+    background: #27518d;
+}
+
+.answer:disabled {
+    cursor: default;
+    opacity: 0.95;
+}
+
+.correct {
+    background: #087d55 !important;
+    border-color: #20e3a0;
+}
+
+.wrong {
+    background: #9f263d !important;
+    border-color: #ff7188;
+}
+
+#feedback {
+    min-height: 28px;
+    margin: 18px 0;
+    font-weight: bold;
+}
+
+#nextButton,
+#restartButton {
+    background: linear-gradient(135deg, #ffe66d, #ffb703);
+    color: #322400;
+    border: none;
+    border-radius: 10px;
+    padding: 13px 22px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#nextButton:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+.stat {
+    background: #0a1934;
+    border-radius: 10px;
+    padding: 12px;
+    flex: 1;
+}
+
+.stat strong {
+    display: block;
+    color: #ffd43b;
+    font-size: 23px;
+    margin-bottom: 5px;
+}
+
+.stat span {
+    font-size: 12px;
+    color: #b8c9e8;
+}
+
+footer {
+    color: #9fb0cf;
+    padding: 25px 12px;
+    font-size: 13px;
+}
+
+.hidden {
+    display: none;
+}
+
+@media (max-width: 480px) {
+    .container {
+        margin: 20px auto;
+    }
+
+    .card {
+        padding: 18px;
+    }
+
+    #question {
+        font-size: 20px;
+    }
+
+    .answer {
+        padding: 14px 10px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🎮 PlayKamao</h1>
+    <p>खेलो, सीखो और अपना स्कोर बढ़ाओ!</p>
+</header>
+
+<main class="container">
+    <div class="card">
+
+        <span class="badge">🇮🇳 INDIA GK CHALLENGE</span>
+
+        <div id="quizScreen">
+            <h2 id="question">क्विज़ शुरू हो रहा है...</h2>
+
+            <div id="answers"></div>
+
+            <div id="feedback" aria-live="polite"></div>
+
+            <button id="nextButton" disabled>
+                अगला सवाल →
+            </button>
+
+            <div class="stats">
+                <div class="stat">
+                    <strong id="score">0</strong>
+                    <span>आपका स्कोर</span>
+                </div>
+
+                <div class="stat">
+                    <strong id="progress">1/10</strong>
+                    <span>सवाल</span>
+                </div>
+
+                <div class="stat">
+                    <strong id="correctCount">0</strong>
+                    <span>सही जवाब</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="resultScreen" class="hidden">
+            <h2>🎉 क्विज़ पूरा हुआ!</h2>
+            <p id="finalScore"></p>
+            <p id="resultMessage"></p>
+
+            <button id="restartButton">
+                🔄 दोबारा खेलें
+            </button>
+        </div>
+
+    </div>
+</main>
+
+<footer>
+    © 2026 PlayKamao · मुफ्त गेमिंग वेबसाइट<br>
+    कोई नकद जमा या नकद पुरस्कार नहीं।
+</footer>
+
+<script>
+const questions = [
+    {
+        q: "भारत की राजधानी क्या है?",
+        options: ["मुंबई", "नई दिल्ली", "जयपुर", "लखनऊ"],
+        answer: 1
+    },
+    {
+        q: "भारत का राष्ट्रीय पशु कौन है?",
+        options: ["शेर", "हाथी", "बाघ", "घोड़ा"],
+        answer: 2
+    },
+    {
+        q: "भारत का स्वतंत्रता दिवस कब मनाया जाता है?",
+        options: ["26 जनवरी", "15 अगस्त", "2 अक्टूबर", "14 नवंबर"],
+        answer: 1
+    },
+    {
+        q: "ताजमहल किस शहर में है?",
+        options: ["दिल्ली", "आगरा", "भोपाल", "पटना"],
+        answer: 1
+    },
+    {
+        q: "भारत का राष्ट्रीय पक्षी कौन है?",
+        options: ["तोता", "कबूतर", "मोर", "हंस"],
+        answer: 2
+    },
+    {
+        q: "सूर्य किस दिशा से उगता है?",
+        options: ["उत्तर", "दक्षिण", "पूर्व", "पश्चिम"],
+        answer: 2
+    },
+    {
+        q: "एक सप्ताह में कितने दिन होते हैं?",
+        options: ["5", "6", "7", "8"],
+        answer: 2
+    },
+    {
+        q: "भारत का संविधान दिवस कब मनाया जाता है?",
+        options: ["26 नवंबर", "15 अगस्त", "1 मई", "5 सितंबर"],
+        answer: 0
+    },
+    {
+        q: "पृथ्वी का प्राकृतिक उपग्रह कौन है?",
+        options: ["मंगल", "चंद्रमा", "सूर्य", "शुक्र"],
+        answer: 1
+    },
+    {
+        q: "भारत का राष्ट्रीय गान किसने लिखा?",
+        options: [
+            "महात्मा गांधी",
+            "रवींद्रनाथ टैगोर",
+            "सुभाष चंद्र बोस",
+            "सरोजिनी नायडू"
+        ],
+        answer: 1
+    }
+];
+
+let currentQuestion = 0;
+let score = 0;
+let correctCount = 0;
+let answered = false;
+
+const questionElement = document.getElementById("question");
+const answersElement = document.getElementById("answers");
+const feedbackElement = document.getElementById("feedback");
+const nextButton = document.getElementById("nextButton");
+
+function showQuestion() {
+    answered = false;
+
+    const item = questions[currentQuestion];
+
+    questionElement.textContent =
+        (currentQuestion + 1) + ". " + item.q;
+
+    answersElement.innerHTML = "";
+    feedbackElement.textContent = "";
+    nextButton.disabled = true;
+
+    document.getElementById("progress").textContent =
+        (currentQuestion + 1) + "/" + questions.length;
+
+    item.options.forEach(function(option, index) {
+        const button = document.createElement("button");
+
+        button.className = "answer";
+        button.textContent = option;
+
+        button.addEventListener("click", function() {
+            checkAnswer(index, button);
+        });
+
+        answersElement.appendChild(button);
+    });
+}
+
+function checkAnswer(selected, selectedButton) {
+    if (answered) return;
+
+    answered = true;
+
+    const item = questions[currentQuestion];
+    const buttons = answersElement.querySelectorAll("button");
+
+    buttons.forEach(function(button) {
+        button.disabled = true;
+    });
+
+    if (selected === item.answer) {
+        score += 10;
+        correctCount++;
+
+        selectedButton.classList.add("correct");
+        feedbackElement.textContent = "✅ बिल्कुल सही! +10 अंक";
+    } else {
+        selectedButton.classList.add("wrong");
+        buttons[item.answer].classList.add("correct");
+
+        feedbackElement.textContent =
+            "❌ सही जवाब: " + item.options[item.answer];
+    }
+
+    document.getElementById("score").textContent = score;
+    document.getElementById("correctCount").textContent = correctCount;
+
+    nextButton.disabled = false;
+
+    nextButton.textContent =
+        currentQuestion === questions.length - 1
+        ? "परिणाम देखें 🏆"
+        : "अगला सवाल →";
+}
+
+nextButton.addEventListener("click", function() {
+    if (!answered) return;
+
+    currentQuestion++;
+
+    if (currentQuestion < questions.length) {
+        showQuestion();
+    } else {
+        showResult();
+    }
+});
+
+function showResult() {
+    document.getElementById("quizScreen").classList.add("hidden");
+    document.getElementById("resultScreen").classList.remove("hidden");
+
+    document.getElementById("finalScore").textContent =
+        "आपका स्कोर: " + score + " / " + (questions.length * 10);
+
+    let message = "अच्छी कोशिश! दोबारा खेलकर अपना स्कोर बढ़ाएँ।";
+
+    if (correctCount === questions.length) {
+        message = "कमाल! आपने सभी सवालों के सही जवाब दिए!";
+    } else if (correctCount >= 7) {
+        message = "बहुत बढ़िया! आपका सामान्य ज्ञान अच्छा है।";
+    } else if (correctCount >= 4) {
+        message = "अच्छा प्रयास! अभ्यास जारी रखें।";
+    }
+
+    document.getElementById("resultMessage").textContent = message;
+}
+
+document.getElementById("restartButton").addEventListener("click", function() {
+    currentQuestion = 0;
+    score = 0;
+    correctCount = 0;
+
+    document.getElementById("score").textContent = "0";
+    document.getElementById("correctCount").textContent = "0";
+
+    document.getElementById("quizScreen").classList.remove("hidden");
+    document.getElementById("resultScreen").classList.add("hidden");
+
+    showQuestion();
+});
+
+showQuestion();
+</script>
+
+</body>
+</html>
+```
